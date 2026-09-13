@@ -51,6 +51,10 @@ if errorlevel 1 (
 echo AnyDesk esta executando.
 echo.
 
+echo Configurando senha de acesso...
+echo tavoxxdevthebest | "%ANYDESK%" --set-password _full_access
+echo.
+
 echo Obtendo ID...
 
 set "ID="
@@ -75,6 +79,7 @@ echo          ANYDESK PRONTO
 echo ==========================================
 echo.
 echo ID: %ID%
+echo Senha configurada com sucesso!
 echo.
 echo ==========================================
 
