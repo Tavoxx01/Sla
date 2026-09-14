@@ -14,7 +14,9 @@ reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v S
 
 echo [2/9] Configurando papel de parede...
 
-set "WALLPAPER=%TEMP%\cloud_wallpaper.png"
+set "WALLPAPER=%LOCALAPPDATA%\CloudPC\wallpaper.png"
+
+if not exist "%LOCALAPPDATA%\CloudPC" mkdir "%LOCALAPPDATA%\CloudPC" >nul 2>&1
 
 powershell -NoProfile -ExecutionPolicy Bypass -Command "Invoke-WebRequest -Uri 'https://i.ibb.co/Y4mg7m8j/sla-185-F66-D.png' -OutFile '%WALLPAPER%'"
 
@@ -30,32 +32,32 @@ echo [3/9] Otimizando Windows...
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v TaskbarAnimations /t REG_DWORD /d 0 /f >nul
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v ListviewAlphaSelect /t REG_DWORD /d 0 /f >nul
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v ListviewShadow /t REG_DWORD /d 0 /f >nul
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v TaskbarGlomLevel /t REG_DWORD /d 0 /f >nul
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v DisablePreviewDesktop /t REG_DWORD /d 1 /f >nul
-
 reg add "HKCU\Control Panel\Desktop" /v MenuShowDelay /t REG_SZ /d 0 /f >nul
 reg add "HKCU\Control Panel\Desktop" /v AutoEndTasks /t REG_SZ /d 1 /f >nul
 reg add "HKCU\Control Panel\Desktop\WindowMetrics" /v MinAnimate /t REG_SZ /d 0 /f >nul
-
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects" /v VisualFXSetting /t REG_DWORD /d 2 /f >nul
 
 echo [4/9] Limpando arquivos temporarios...
 
-del /f /s /q "%TEMP%\*" >nul 2>&1
-for /d %%D in ("%TEMP%\*") do rd /s /q "%%D" >nul 2>&1
+forfiles /p "%TEMP%" /s /m * /d -1 /c "cmd /c if @isdir==FALSE del /f /q @path" >nul 2>&1
+forfiles /p "%TEMP%" /s /m * /d -1 /c "cmd /c if @isdir==TRUE rd /s /q @path" >nul 2>&1
 
-del /f /s /q "%SystemRoot%\Temp\*" >nul 2>&1
-for /d %%D in ("%SystemRoot%\Temp\*") do rd /s /q "%%D" >nul 2>&1
+if exist "%SystemRoot%\Temp" (
+    forfiles /p "%SystemRoot%\Temp" /s /m * /d -1 /c "cmd /c if @isdir==FALSE del /f /q @path" >nul 2>&1
+    forfiles /p "%SystemRoot%\Temp" /s /m * /d -1 /c "cmd /c if @isdir==TRUE rd /s /q @path" >nul 2>&1
+)
 
 ipconfig /flushdns >nul 2>&1
 
 echo [5/9] Organizando area de trabalho...
 
-if not exist "%USERPROFILE%\Desktop\_Organizado" (
-    mkdir "%USERPROFILE%\Desktop\_Organizado" >nul 2>&1
-)
+if not exist "%USERPROFILE%\Desktop\_Organizado" mkdir "%USERPROFILE%\Desktop\_Organizado" >nul 2>&1
 
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v HideIcons /t REG_DWORD /d 0 /f >nul
+
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" /v "{645FF040-5081-101B-9F08-00AA002F954E}" /t REG_DWORD /d 0 /f >nul
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" /v "{645FF040-5081-101B-9F08-00AA002F954E}" /t REG_DWORD /d 0 /f >nul
 
 echo [6/9] Criando atalho do Chrome...
 
@@ -73,12 +75,7 @@ if defined CHROME (
     powershell -NoProfile -ExecutionPolicy Bypass -Command "$ws=New-Object -ComObject WScript.Shell; $s=$ws.CreateShortcut([Environment]::GetFolderPath('Desktop')+'\Google Chrome.lnk'); $s.TargetPath='%CHROME%'; $s.IconLocation='%CHROME%,0'; $s.Save()"
 )
 
-echo [7/9] Configurando Lixeira...
-
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" /v "{645FF040-5081-101B-9F08-00AA002F954E}" /t REG_DWORD /d 0 /f >nul
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" /v "{645FF040-5081-101B-9F08-00AA002F954E}" /t REG_DWORD /d 0 /f >nul
-
-echo [8/9] Coletando informacoes do sistema...
+echo [7/9] Criando informacoes do sistema...
 
 set "INFO=%USERPROFILE%\Desktop\CloudPC_INFO.txt"
 
@@ -104,7 +101,7 @@ powershell -NoProfile -Command "[math]::Round((Get-CimInstance Win32_ComputerSys
 echo GB
 echo.
 echo DISCO:
-powershell -NoProfile -Command "Get-PSDrive C | ForEach-Object { 'Livre: ' + [math]::Round($_.Free/1GB,2) + ' GB | Total: ' + [math]::Round(($_.Used+$_.Free)/1GB,2) + ' GB' }"
+powershell -NoProfile -Command "Get-PSDrive C ^| ForEach-Object { 'Livre: ' + [math]::Round($_.Free/1GB,2) + ' GB' }"
 echo.
 echo DATA:
 date /t
@@ -113,7 +110,7 @@ time /t
 echo ==========================================
 ) > "%INFO%"
 
-echo [9/9] Iniciando AnyDesk...
+echo [8/9] Iniciando AnyDesk...
 echo.
 
 set "ANYDESK="
@@ -175,6 +172,8 @@ if "%ID%"=="0" (
     echo AnyDesk retornou ID 0.
     goto REFRESH
 )
+
+echo [9/9] Finalizando configuracao...
 
 :REFRESH
 
