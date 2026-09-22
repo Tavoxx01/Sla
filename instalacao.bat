@@ -34,6 +34,17 @@ if errorlevel 1 (
 call refreshenv >nul 2>&1
 
 echo.
+echo Instalando Tailscale...
+choco install tailscale -y --no-progress
+
+if errorlevel 1 (
+    echo ERRO: Falha ao instalar o Tailscale.
+    exit /b 1
+)
+
+call refreshenv >nul 2>&1
+
+echo.
 echo Verificando instalacao...
 
 where AnyDesk.exe >nul 2>&1
@@ -43,6 +54,15 @@ if errorlevel 1 (
     echo A instalacao pode ter sido concluida, mas o executavel sera localizado pelo start.bat.
 ) else (
     echo AnyDesk encontrado no PATH.
+)
+
+where tailscale.exe >nul 2>&1
+
+if errorlevel 1 (
+    echo Tailscale nao apareceu no PATH.
+    echo A instalacao pode ter sido concluida, mas o executavel pode precisar ser localizado manualmente.
+) else (
+    echo Tailscale encontrado no PATH.
 )
 
 echo.
