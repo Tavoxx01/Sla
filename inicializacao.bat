@@ -20,7 +20,7 @@ if not exist "%LOCALAPPDATA%\CloudPC" mkdir "%LOCALAPPDATA%\CloudPC" >nul 2>&1
 
 powershell -NoProfile -ExecutionPolicy Bypass -Command "Invoke-WebRequest -Uri 'https://i.ibb.co/Y4mg7m8j/sla-185-F66-D.png' -OutFile '%WALLPAPER%'"
 
-if exist "%WALLPAPER%" (
+if exist "%WALLAPER%" (
     reg add "HKCU\Control Panel\Desktop" /v Wallpaper /t REG_SZ /d "%WALLPAPER%" /f >nul
     reg add "HKCU\Control Panel\Desktop" /v WallpaperStyle /t REG_SZ /d 2 /f >nul
     reg add "HKCU\Control Panel\Desktop" /v TileWallpaper /t REG_SZ /d 0 /f >nul
@@ -138,17 +138,23 @@ echo.
 net start Tailscale >nul 2>&1
 
 echo.
-echo Iniciando autenticacao do Tailscale...
-echo Uma janela ou link de autorizacao sera exibido.
-echo Faca login na sua conta Tailscale para autorizar este dispositivo.
+echo ==========================================
+echo   AUTORIZACAO DO TAILSCALE
+echo ==========================================
+echo.
+echo O link de autorizacao sera exibido abaixo.
+echo Copie o link e abra no navegador para autorizar este dispositivo.
+echo.
+echo Aguardando autenticacao...
 echo.
 
-start "" "%TAILSCALE%" up --accept-routes --accept-dns
-
-timeout /t 10 /nobreak >nul
+:: Executa no console atual para que o link apareca aqui
+"%TAILSCALE%" up --accept-routes --accept-dns
 
 echo.
-echo Aguardando autenticacao (pressione qualquer tecla apos autorizar no navegador)...
+echo ==========================================
+echo   Apos autorizar no navegador, pressione qualquer tecla para continuar...
+echo ==========================================
 pause >nul
 
 echo.
