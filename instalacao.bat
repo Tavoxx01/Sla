@@ -24,7 +24,7 @@ call refreshenv >nul 2>&1
 
 echo.
 echo Instalando AnyDesk...
-choco install anydesk -y --no-progress
+choco install anydesk -y --no-progress --ignore-checksums
 
 if errorlevel 1 (
     echo ERRO: Falha ao instalar o AnyDesk.
